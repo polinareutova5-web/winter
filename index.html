@@ -118,6 +118,48 @@
       overflow: hidden;
     }
 
+    .santa-flight {
+      position: absolute;
+      left: -320px;
+      top: 135px;
+      z-index: 6;
+      white-space: nowrap;
+      font-size: 104px;
+      line-height: 1;
+      pointer-events: none;
+      filter: drop-shadow(0 5px 8px rgba(0,0,0,0.35));
+      animation: santaFlight 14s linear forwards;
+    }
+
+    @keyframes santaFlight {
+      from { transform: translateX(0) translateY(0) rotate(-2deg); }
+      25% { transform: translateX(1120px) translateY(18px) rotate(1deg); }
+      55% { transform: translateX(2450px) translateY(-8px) rotate(-1deg); }
+      to { transform: translateX(4700px) translateY(8px) rotate(2deg); }
+    }
+
+    #sound-toggle {
+      position: fixed;
+      top: 76px;
+      right: 24px;
+      z-index: 95;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 22px;
+      padding: 8px 13px;
+      background: rgba(11,26,43,0.78);
+      color: #fff;
+      font: 600 13px 'Nunito', sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    #sound-toggle:hover { background: rgba(30,60,90,0.95); }
+
+    @media (max-width: 600px) {
+      #sound-toggle { top: 62px; right: 12px; font-size: 12px; padding: 7px 10px; }
+      .santa-flight { font-size: 72px; top: 150px; }
+    }
+
     .star {
       position: absolute;
       background: #fff;
@@ -614,6 +656,7 @@
     <button id="zoom-out" title="Zoom out">−</button>
   </div>
 
+  <button id="sound-toggle" type="button" aria-pressed="false">🔇 Santa sound off</button>
   <button id="plus-btn" title="Write a letter">+</button>
 
   <div class="modal-overlay" id="form-modal">
@@ -665,15 +708,17 @@
   <div id="toast"></div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = ''; // <-- PASTE YOUR APPS SCRIPT URL HERE
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwM_4bV2m8x30PEVe13CTn4QZDGFnCmkWPG1qkucpJJfVaGUeBXMl71lo95x6ZKhzor/exec';
 
     const TREE_STYLES = [
       { id: 'pine',    src: 'https://i.imgur.com/mdVlYNq.png', name: 'Pine' },
       { id: 'bauble',  src: 'https://i.imgur.com/UojLPPo.png', name: 'Baubles' },
-      { id: 'magic',   src: 'https://i.imgur.com/DLl0zX8.png', name: 'Magic' }
+      { id: 'magic',   src: 'https://i.imgur.com/DLl0zX8.png', name: 'Magic' },
+      { id: 'snowy',   src: 'https://i.imgur.com/lKbEckb.png', name: 'Snowy' },
+      { id: 'letter',  src: 'https://i.imgur.com/xge6oNb.png', name: 'Letter tree' }
     ];
 
-    // Ёлочка, которая появляется на карте после отправки письма
+    // Сохраняем прежнюю ёлочку с письмом как отдельный вариант.
     const LETTER_TREE_SRC = 'https://i.imgur.com/xge6oNb.png';
 
     const GROUND_TOP = 1120;
@@ -688,6 +733,16 @@
     const MIN_SCALE = 0.45;
     const MAX_SCALE = 2.2;
     let isConfigured = false;
+    let santaSoundEnabled = false;
+
+    const DECORATIVE_TREE_POSITIONS = [
+      [260, 1320, 0.8, 0], [850, 1530, 0.9, 1], [1450, 1280, 0.75, 2],
+      [2050, 1580, 0.95, 0], [2700, 1320, 0.8, 1], [3450, 1530, 0.9, 2],
+      [3900, 1280, 0.85, 0], [500, 1900, 0.85, 2], [1150, 1760, 0.75, 0],
+      [1800, 2050, 0.9, 1], [2450, 1850, 0.8, 2], [3150, 2020, 0.85, 0],
+      [3700, 1830, 0.8, 1]
+    ];
+    const SNOWMAN_POSITIONS = [[900, 1480], [1700, 1520], [2500, 1460], [700, 1920], [2000, 1960], [3200, 1900]];
 
     const viewport = document.getElementById('map-viewport');
     const world = document.getElementById('map-world');
@@ -705,6 +760,7 @@
       setupZoom();
       setupModals();
       setupForm();
+      setupSanta();
       centerMap();
 
       isConfigured = GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.includes('script.google.com');
@@ -761,17 +817,8 @@
         world.appendChild(el);
       });
 
-      // Декоративные ёлочки (поменьше количество)
-      const deco = [
-        [280, 1400, 0.8, 0], [700, 1360, 0.9, 1], [1200, 1420, 0.75, 2],
-        [1700, 1350, 0.95, 0], [2200, 1400, 0.8, 1], [2700, 1360, 0.9, 2],
-        [3200, 1410, 0.85, 0], [3700, 1370, 0.8, 1],
-        [500, 1850, 0.85, 2], [1100, 1900, 0.75, 0],
-        [1900, 1830, 0.9, 1], [2600, 1880, 0.8, 2],
-        [3400, 1840, 0.85, 0]
-      ];
-
-      deco.forEach(([x, y, scale, typeIdx]) => {
+      // Те же 13 декоративных ёлок, но в более естественной шахматной расстановке.
+      DECORATIVE_TREE_POSITIONS.forEach(([x, y, scale, typeIdx]) => {
         const style = TREE_STYLES[typeIdx % TREE_STYLES.length];
         const el = document.createElement('div');
         el.className = 'deco-tree';
@@ -787,11 +834,7 @@
         'https://i.imgur.com/l4CR4sE.png',
         'https://i.imgur.com/GJ0Oa1C.png'
       ];
-      const snowmen = [
-        [900, 1480], [1700, 1520], [2500, 1460],
-        [700, 1920], [2000, 1960], [3200, 1900]
-      ];
-      snowmen.forEach(([x, y], i) => {
+      SNOWMAN_POSITIONS.forEach(([x, y], i) => {
         const el = document.createElement('div');
         el.className = 'snowman';
         el.style.left = x + 'px';
@@ -910,9 +953,30 @@
     }
 
     function randomGroundPos() {
+      const minX = 180, maxX = MAP_WIDTH - 340;
+      const minY = GROUND_TOP + 70, maxY = GROUND_BOTTOM - 210;
+      const occupied = [
+        ...trees.map(t => ({ x: t.x, y: t.y, radius: 210 })),
+        ...DECORATIVE_TREE_POSITIONS.map(([x, y]) => ({ x, y, radius: 175 })),
+        ...SNOWMAN_POSITIONS.map(([x, y]) => ({ x, y, radius: 125 }))
+      ];
+
+      // Сначала пробуем случайные точки, отступая от уже стоящих объектов.
+      for (let attempt = 0; attempt < 160; attempt++) {
+        const point = {
+          x: Math.round(minX + Math.random() * (maxX - minX)),
+          y: Math.round(minY + Math.random() * (maxY - minY))
+        };
+        const isFree = occupied.every(item =>
+          Math.hypot(point.x - item.x, point.y - item.y) >= item.radius
+        );
+        if (isFree) return point;
+      }
+
+      // Резервный вариант остаётся строго в пределах земли и карты.
       return {
-        x: Math.round(200 + Math.random() * (MAP_WIDTH - 400)),
-        y: Math.round(GROUND_TOP + 40 + Math.random() * (GROUND_BOTTOM - GROUND_TOP - 200))
+        x: Math.round(minX + Math.random() * (maxX - minX)),
+        y: Math.round(minY + Math.random() * (maxY - minY))
       };
     }
 
@@ -932,7 +996,7 @@
         trees = data.map((row, idx) => {
           let x = parseFloat(row.x);
           let y = parseFloat(row.y);
-          if (!Number.isFinite(x) || !Number.isFinite(y) || y < GROUND_TOP) {
+          if (!Number.isFinite(x) || !Number.isFinite(y) || x < 100 || x > MAP_WIDTH - 200 || y < GROUND_TOP + 20 || y > GROUND_BOTTOM - 80) {
             const p = randomGroundPos();
             x = p.x; y = p.y;
           }
@@ -957,6 +1021,11 @@
       }
     }
 
+    function getTreeImage(tree) {
+      const style = TREE_STYLES.find(item => item.id === tree.type);
+      return style ? style.src : LETTER_TREE_SRC;
+    }
+
     function renderTrees() {
       document.querySelectorAll('.map-tree').forEach(el => el.remove());
 
@@ -967,7 +1036,7 @@
         el.style.top = tree.y + 'px';
         el.style.width = '150px';
         el.innerHTML = `
-          <img src="${LETTER_TREE_SRC}" alt="" draggable="false" />
+          <img src="${getTreeImage(tree)}" alt="" draggable="false" />
           <div class="tree-label">${escapeHtml(tree.signature)}</div>
         `;
 
@@ -984,7 +1053,7 @@
 
     function showLetter(tree) {
       document.getElementById('letter-content').innerHTML = `
-        <div class="tree-badge"><img src="${LETTER_TREE_SRC}" alt="" /></div>
+        <div class="tree-badge"><img src="${getTreeImage(tree)}" alt="" /></div>
         <h3>Letter from ${escapeHtml(tree.signature)}</h3>
         <div class="wish">${escapeHtml(tree.wish)}</div>
         <div class="lesson">
@@ -1098,6 +1167,43 @@
       });
 
       if (!res.ok && res.status !== 0) throw new Error('Server error');
+    }
+
+    function setupSanta() {
+      const soundButton = document.getElementById('sound-toggle');
+      soundButton.addEventListener('click', () => {
+        santaSoundEnabled = !santaSoundEnabled;
+        soundButton.textContent = santaSoundEnabled ? '🔊 Santa sound on' : '🔇 Santa sound off';
+        soundButton.setAttribute('aria-pressed', String(santaSoundEnabled));
+        if (santaSoundEnabled) showToast('Santa will say Ho, ho, ho! 🎅');
+      });
+
+      // Первый пролёт вскоре после загрузки, затем строго каждые две минуты.
+      setTimeout(flySanta, 12000);
+      setInterval(flySanta, 120000);
+    }
+
+    function flySanta() {
+      const oldSanta = world.querySelector('.santa-flight');
+      if (oldSanta) oldSanta.remove();
+
+      const santa = document.createElement('div');
+      santa.className = 'santa-flight';
+      santa.setAttribute('aria-hidden', 'true');
+      santa.textContent = '🎅🛷';
+      world.appendChild(santa);
+
+      if (santaSoundEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const greeting = new SpeechSynthesisUtterance('Ho, ho, ho!');
+        greeting.lang = 'en-US';
+        greeting.rate = 0.82;
+        greeting.pitch = 0.9;
+        greeting.volume = 1;
+        window.speechSynthesis.speak(greeting);
+      }
+
+      santa.addEventListener('animationend', () => santa.remove(), { once: true });
     }
 
     function showToast(msg) {

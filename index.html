@@ -943,7 +943,7 @@
         el.className = 'deco-tree';
         el.style.left = x + 'px';
         el.style.top = y + 'px';
-        el.style.width = (155 * scale) + 'px';
+        el.style.width = (210 * scale) + 'px';
         el.innerHTML = `<img src="${style.src}" alt="" draggable="false" />`;
         world.appendChild(el);
       });
@@ -964,12 +964,12 @@
 
       // Два уютных домика у границы неба и снежной поляны.
       const houseImages = [
-        'https://i.imgur.com/ZTh9feR.jpeg',
-        'https://i.imgur.com/Ct16pV9.png'
+        'https://i.imgur.com/gcgKN7D.png',
+        'https://i.imgur.com/1J16h7q.jpeg'
       ];
       const housePositions = [
-        { x: 560, y: 790, width: 390 },
-        { x: 3210, y: 805, width: 370 }
+        { x: 560, y: 790, width: 330 },
+        { x: 3210, y: 805, width: 315 }
       ];
       housePositions.forEach((pos, i) => {
         const el = document.createElement('div');
@@ -1225,7 +1225,7 @@
         el.setAttribute('aria-label', 'Read the Christmas letter from ' + tree.signature);
         el.style.left = tree.x + 'px';
         el.style.top = tree.y + 'px';
-        el.style.width = '165px';
+        el.style.width = '210px';
         el.innerHTML = `
           <img src="${getTreeImage(tree)}" alt="" draggable="false" />
           <div class="tree-label">${escapeHtml(tree.signature)}</div>

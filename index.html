@@ -659,19 +659,6 @@
       0%,100% { opacity: .55; transform: scale(.85) rotate(0); }
       50% { opacity: 1; transform: scale(1.12) rotate(18deg); }
     }
-    .festive-garland {
-      position: absolute; left: 0; right: 0; top: 1010px;
-      height: 90px; z-index: 5; pointer-events: none;
-      border-top: 3px solid rgba(35, 94, 66, .55);
-      border-radius: 50% 50% 0 0 / 0 0 100% 100%;
-      filter: drop-shadow(0 3px 4px rgba(0,0,0,.12));
-    }
-    .festive-garland::after {
-      content: "🔴  ✨  🟡  ✨  🔴  ✨  🟡  ✨  🔴  ✨  🟡  ✨  🔴";
-      position: absolute; top: -14px; left: 4%; right: 4%;
-      display: flex; justify-content: space-around;
-      font-size: 18px; letter-spacing: 12px;
-    }
     .winter-decor {
       position: absolute; z-index: 6; pointer-events: none;
       font-size: 42px; filter: drop-shadow(0 4px 4px rgba(0,0,0,.12));
@@ -724,7 +711,6 @@
       #tree-counter { left: 10px; bottom: 17px; padding: 8px 12px; font-size: .8rem; }
       #zoom-controls { right: 12px; bottom: 90px; }
       #welcome-note { top: 54%; padding: 18px; }
-      .festive-garland { top: 1040px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -756,7 +742,6 @@
     <div id="map-world">
       <div class="sky"></div>
       <div class="ground"></div>
-      <div class="festive-garland" aria-hidden="true"></div>
       <div class="winter-decor" style="left:330px;top:1130px">🎁</div>
       <div class="winter-decor" style="left:3850px;top:1640px;animation-delay:1s">🛷</div>
       <div class="winter-decor" style="left:2050px;top:2220px;animation-delay:2s">🧸</div>

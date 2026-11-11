@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1a2b" />
+  <meta name="description" content="Explore a magical winter forest, read Christmas wishes and plant your own tree in our Winter Wish Contest." />
+  <meta property="og:title" content="Winter Wish Contest ❄️" />
+  <meta property="og:description" content="Every Christmas tree holds a wish. Come explore the winter wonderland and plant yours!" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎄%3C/text%3E%3C/svg%3E" />
   <title>Winter Wish Contest ❄️</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -980,13 +986,19 @@
         const btn = document.createElement('div');
         btn.className = 'tree-option';
         btn.dataset.id = t.id;
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('tabindex', '0');
+        btn.setAttribute('aria-pressed', 'false');
         btn.innerHTML = `<img src="${t.src}" alt="${t.name}" draggable="false" /><span>${t.name}</span>`;
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tree-option').forEach(el => el.classList.remove('selected'));
+        const chooseTree = () => {
+          document.querySelectorAll('.tree-option').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed', 'false'); });
           btn.classList.add('selected');
+          btn.setAttribute('aria-pressed', 'true');
           selectedTreeType = t.id;
           document.getElementById('treeType').value = t.id;
-        });
+        };
+        btn.addEventListener('click', chooseTree);
+        btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseTree(); } });
         picker.appendChild(btn);
       });
     }
@@ -1191,6 +1203,9 @@
       trees.forEach(tree => {
         const el = document.createElement('div');
         el.className = 'map-tree';
+        el.setAttribute('role', 'button');
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('aria-label', 'Read the Christmas letter from ' + tree.signature);
         el.style.left = tree.x + 'px';
         el.style.top = tree.y + 'px';
         el.style.width = '165px';
@@ -1199,10 +1214,9 @@
           <div class="tree-label">${escapeHtml(tree.signature)}</div>
         `;
 
-        el.addEventListener('click', e => {
-          e.stopPropagation();
-          showLetter(tree);
-        });
+        const openTreeLetter = e => { e.stopPropagation(); showLetter(tree); };
+        el.addEventListener('click', openTreeLetter);
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTreeLetter(e); } });
 
         world.appendChild(el);
       });

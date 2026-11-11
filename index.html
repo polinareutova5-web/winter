@@ -737,6 +737,112 @@
       .form-card { padding: 22px 16px 20px; }
       .tree-option img { width: 44px; }
     }
+
+    /* Mobile layout: keep controls clear and make the map comfortable to explore. */
+    @media (max-width: 600px) {
+      header {
+        padding: 10px 12px 8px;
+        align-items: flex-start;
+        background: linear-gradient(180deg, rgba(11,26,43,.96), rgba(11,26,43,.55) 78%, transparent);
+      }
+      header h1 { font-size: 1.05rem; line-height: 1.25; }
+      header .hint { display: none; }
+
+      #top-actions {
+        top: 58px;
+        left: 10px;
+        right: auto;
+        gap: 6px;
+        max-width: calc(100vw - 20px);
+      }
+      .utility-btn {
+        padding: 7px 10px;
+        font-size: 11px;
+        border-radius: 18px;
+      }
+      #sound-toggle {
+        top: 101px;
+        right: 10px;
+        padding: 7px 10px;
+        font-size: 11px;
+      }
+
+      #zoom-controls {
+        right: 12px;
+        bottom: 92px;
+        gap: 6px;
+      }
+      #zoom-controls button {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        font-size: 20px;
+      }
+
+      #plus-btn {
+        width: 60px;
+        height: 60px;
+        right: 12px;
+        bottom: max(14px, env(safe-area-inset-bottom));
+        font-size: 34px;
+      }
+      #tree-counter {
+        left: 12px;
+        right: 84px;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        width: auto;
+        max-width: 260px;
+        padding: 8px 11px;
+        border-radius: 18px;
+        font-size: 12px;
+        line-height: 1.25;
+      }
+      #tree-counter .counter-copy { display: inline-flex; flex-direction: column; gap: 2px; }
+      #tree-counter small { font-size: 10px; line-height: 1.2; }
+
+      #welcome-note {
+        padding: 18px 17px;
+        border-radius: 18px;
+      }
+      #welcome-note .welcome-icon { font-size: 32px; }
+      #welcome-note h2 { font-size: 1.25rem; }
+      #welcome-note p { font-size: .86rem; }
+
+      .modal-overlay {
+        padding: 10px;
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+      }
+      .modal { max-height: 94dvh; border-radius: 16px; }
+      .form-card { padding: 24px 16px 22px; }
+      .form-card h2 { font-size: 1.3rem; }
+      .form-card .subtitle { font-size: .82rem; margin-bottom: 14px; }
+      .form-group label { font-size: .82rem; }
+      .form-group input, .form-group textarea { font-size: 16px; }
+      .tree-picker { gap: 7px; }
+      .tree-option { padding: 6px 3px; }
+      .tree-option img { width: 46px; }
+      .letter-paper { padding: 25px 18px; }
+    }
+
+    @media (max-width: 380px) {
+      header h1 { font-size: .96rem; }
+      #top-actions { gap: 5px; }
+      .utility-btn { padding: 6px 8px; font-size: 10px; }
+      #sound-toggle { top: 98px; font-size: 10px; }
+      #tree-counter { right: 78px; left: 9px; padding: 7px 9px; }
+      #plus-btn { width: 56px; height: 56px; right: 10px; }
+    }
+
+    @media (max-height: 520px) and (orientation: landscape) {
+      #tree-counter { bottom: 8px; }
+      #plus-btn { bottom: 8px; width: 52px; height: 52px; }
+      #zoom-controls { bottom: 70px; }
+      #sound-toggle { top: 58px; }
+      #top-actions { top: 58px; }
+      #welcome-note { max-height: 82vh; overflow-y: auto; }
+    }
+
   </style>
 </head>
 <body>
@@ -848,8 +954,9 @@
     let selectedTreeType = null;
     let isDragging = false;
     let startX, startY, worldX = 0, worldY = 0;
-    let scale = 1;
-    const MIN_SCALE = 0.45;
+    // On phones start at a wider overview; desktop keeps the original close-up.
+    let scale = window.innerWidth <= 600 ? 0.58 : 1;
+    const MIN_SCALE = 0.35;
     const MAX_SCALE = 2.2;
     let isConfigured = false;
     let santaSoundEnabled = false;
@@ -1078,6 +1185,9 @@
       worldY = vh / 2 - 1500 * scale;
       updateWorldTransform();
     }
+
+    // Re-center after rotation or browser-bar changes without resetting the user's zoom.
+    window.addEventListener('resize', centerMap);
 
     function zoomBy(factor) {
       const vw = viewport.clientWidth;

@@ -123,12 +123,16 @@
       left: -320px;
       top: 135px;
       z-index: 6;
-      white-space: nowrap;
-      font-size: 104px;
-      line-height: 1;
+      width: 220px;
       pointer-events: none;
       filter: drop-shadow(0 5px 8px rgba(0,0,0,0.35));
       animation: santaFlight 14s linear forwards;
+    }
+
+    .santa-flight img {
+      display: block;
+      width: 100%;
+      height: auto;
     }
 
     @keyframes santaFlight {
@@ -157,7 +161,7 @@
 
     @media (max-width: 600px) {
       #sound-toggle { top: 62px; right: 12px; font-size: 12px; padding: 7px 10px; }
-      .santa-flight { font-size: 72px; top: 150px; }
+      .santa-flight { width: 155px; top: 150px; }
     }
 
     .star {
@@ -824,7 +828,7 @@
         el.className = 'deco-tree';
         el.style.left = x + 'px';
         el.style.top = y + 'px';
-        el.style.width = (140 * scale) + 'px';
+        el.style.width = (155 * scale) + 'px';
         el.innerHTML = `<img src="${style.src}" alt="" draggable="false" />`;
         world.appendChild(el);
       });
@@ -961,22 +965,52 @@
         ...SNOWMAN_POSITIONS.map(([x, y]) => ({ x, y, radius: 125 }))
       ];
 
-      // Сначала пробуем случайные точки, отступая от уже стоящих объектов.
       for (let attempt = 0; attempt < 160; attempt++) {
         const point = {
           x: Math.round(minX + Math.random() * (maxX - minX)),
           y: Math.round(minY + Math.random() * (maxY - minY))
         };
-        const isFree = occupied.every(item =>
-          Math.hypot(point.x - item.x, point.y - item.y) >= item.radius
-        );
-        if (isFree) return point;
+        if (occupied.every(item => Math.hypot(point.x - item.x, point.y - item.y) >= item.radius)) {
+          return point;
+        }
       }
 
-      // Резервный вариант остаётся строго в пределах земли и карты.
       return {
         x: Math.round(minX + Math.random() * (maxX - minX)),
         y: Math.round(minY + Math.random() * (maxY - minY))
+      };
+    }
+
+    // Для старых строк без сохранённых координат используем воспроизводимую
+    // позицию, чтобы ёлки не перескакивали при каждом обновлении карты.
+    function stableGroundPos(index, alreadyPlaced = []) {
+      const minX = 180, maxX = MAP_WIDTH - 340;
+      const minY = GROUND_TOP + 70, maxY = GROUND_BOTTOM - 210;
+      const occupied = [
+        ...alreadyPlaced.map(t => ({ x: t.x, y: t.y, radius: 210 })),
+        ...DECORATIVE_TREE_POSITIONS.map(([x, y]) => ({ x, y, radius: 175 })),
+        ...SNOWMAN_POSITIONS.map(([x, y]) => ({ x, y, radius: 125 }))
+      ];
+
+      // Детерминированный генератор: один и тот же индекс всегда даёт
+      // одинаковую последовательность точек.
+      let seed = (index + 1) * 2654435761;
+      for (let attempt = 0; attempt < 500; attempt++) {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        const x = minX + (seed / 4294967296) * (maxX - minX);
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        const y = minY + (seed / 4294967296) * (maxY - minY);
+        const point = { x: Math.round(x), y: Math.round(y) };
+        if (occupied.every(item => Math.hypot(point.x - item.x, point.y - item.y) >= item.radius)) {
+          return point;
+        }
+      }
+
+      // Последний резервный вариант также зависит только от индекса.
+      const columns = 6;
+      return {
+        x: 260 + (index % columns) * 650,
+        y: 1650 + Math.floor(index / columns) * 260
       };
     }
 
@@ -993,14 +1027,15 @@
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error('Bad format');
 
+        const loadedTrees = [];
         trees = data.map((row, idx) => {
           let x = parseFloat(row.x);
           let y = parseFloat(row.y);
           if (!Number.isFinite(x) || !Number.isFinite(y) || x < 100 || x > MAP_WIDTH - 200 || y < GROUND_TOP + 20 || y > GROUND_BOTTOM - 80) {
-            const p = randomGroundPos();
+            const p = stableGroundPos(idx, loadedTrees);
             x = p.x; y = p.y;
           }
-          return {
+          const tree = {
             id: 'sheet_' + idx + '_' + (row.signature || '').slice(0, 10),
             signature: row.signature || 'Anonymous',
             wish: row.wish || '',
@@ -1009,6 +1044,8 @@
             date: row.date || '',
             x, y
           };
+          loadedTrees.push(tree);
+          return tree;
         }).filter(t => t.signature && t.wish);
 
         renderTrees();
@@ -1034,7 +1071,7 @@
         el.className = 'map-tree';
         el.style.left = tree.x + 'px';
         el.style.top = tree.y + 'px';
-        el.style.width = '150px';
+        el.style.width = '165px';
         el.innerHTML = `
           <img src="${getTreeImage(tree)}" alt="" draggable="false" />
           <div class="tree-label">${escapeHtml(tree.signature)}</div>
@@ -1190,18 +1227,15 @@
       const santa = document.createElement('div');
       santa.className = 'santa-flight';
       santa.setAttribute('aria-hidden', 'true');
-      santa.textContent = '🎅🛷';
+      const santaImage = document.createElement('img');
+      santaImage.src = 'https://i.imgur.com/zceL3HR.png';
+      santaImage.alt = 'Santa Claus';
+      santaImage.draggable = false;
+      santa.appendChild(santaImage);
       world.appendChild(santa);
 
-      if (santaSoundEnabled && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const greeting = new SpeechSynthesisUtterance('Ho, ho, ho!');
-        greeting.lang = 'en-US';
-        greeting.rate = 0.82;
-        greeting.pitch = 0.9;
-        greeting.volume = 1;
-        window.speechSynthesis.speak(greeting);
-      }
+      // Синтез речи отключён: браузер мог выбирать женский голос.
+      // Подключим отдельную мужскую аудиозапись после выбора файла.
 
       santa.addEventListener('animationend', () => santa.remove(), { once: true });
     }

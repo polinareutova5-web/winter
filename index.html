@@ -143,7 +143,6 @@
     }
 
     #sound-toggle {
-      display: none;
       position: fixed;
       top: 76px;
       right: 24px;
@@ -1207,8 +1206,18 @@
       if (!res.ok && res.status !== 0) throw new Error('Server error');
     }
 
+    const santaAudio = new Audio('santa-hohoho.mp3');
+    santaAudio.preload = 'auto';
+    santaAudio.volume = 0.5; // Громкость в два раза тише максимальной.
+
     function setupSanta() {
-      // Кнопка звука скрыта до подключения настоящей мужской аудиозаписи.
+      const soundButton = document.getElementById('sound-toggle');
+      soundButton.addEventListener('click', () => {
+        santaSoundEnabled = !santaSoundEnabled;
+        soundButton.textContent = santaSoundEnabled ? '🔊 Santa sound on' : '🔇 Santa sound off';
+        soundButton.setAttribute('aria-pressed', String(santaSoundEnabled));
+        showToast(santaSoundEnabled ? 'Santa sound enabled 🎅' : 'Santa sound off');
+      });
 
       // Первый пролёт вскоре после загрузки, затем строго каждые две минуты.
       setTimeout(flySanta, 12000);
@@ -1229,8 +1238,11 @@
       santa.appendChild(santaImage);
       world.appendChild(santa);
 
-      // Синтез речи отключён: браузер мог выбирать женский голос.
-      // Подключим отдельную мужскую аудиозапись после выбора файла.
+      if (santaSoundEnabled) {
+        santaAudio.pause();
+        santaAudio.currentTime = 0;
+        santaAudio.play().catch(err => console.warn('Santa audio could not play:', err));
+      }
 
       santa.addEventListener('animationend', () => santa.remove(), { once: true });
     }

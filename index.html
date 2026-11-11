@@ -143,6 +143,7 @@
     }
 
     #sound-toggle {
+      display: none;
       position: fixed;
       top: 76px;
       right: 24px;
@@ -994,7 +995,7 @@
 
       // Детерминированный генератор: один и тот же индекс всегда даёт
       // одинаковую последовательность точек.
-      let seed = (index + 1) * 2654435761;
+      let seed = ((index + 1) * 2654435761) >>> 0;
       for (let attempt = 0; attempt < 500; attempt++) {
         seed = (seed * 1664525 + 1013904223) >>> 0;
         const x = minX + (seed / 4294967296) * (maxX - minX);
@@ -1207,13 +1208,7 @@
     }
 
     function setupSanta() {
-      const soundButton = document.getElementById('sound-toggle');
-      soundButton.addEventListener('click', () => {
-        santaSoundEnabled = !santaSoundEnabled;
-        soundButton.textContent = santaSoundEnabled ? '🔊 Santa sound on' : '🔇 Santa sound off';
-        soundButton.setAttribute('aria-pressed', String(santaSoundEnabled));
-        if (santaSoundEnabled) showToast('Santa will say Ho, ho, ho! 🎅');
-      });
+      // Кнопка звука скрыта до подключения настоящей мужской аудиозаписи.
 
       // Первый пролёт вскоре после загрузки, затем строго каждые две минуты.
       setTimeout(flySanta, 12000);

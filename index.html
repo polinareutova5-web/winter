@@ -887,15 +887,15 @@
       align-items: flex-start;
       gap: 10px;
       margin: 14px 0 8px;
-      padding: 12px;
+      padding: 11px 12px;
       border: 1px solid rgba(255,215,0,.35);
       border-radius: 10px;
       background: rgba(0,0,0,.2);
       color: #f4f5ec;
-      font-size: .78rem;
-      line-height: 1.45;
+      font-size: .82rem;
+      line-height: 1.4;
     }
-    .consent-group input {
+    .consent-group > input {
       flex: 0 0 auto;
       width: 18px;
       height: 18px;
@@ -903,7 +903,20 @@
       accent-color: #ffd700;
       cursor: pointer;
     }
-    .consent-group label { cursor: pointer; }
+    .consent-copy { flex: 1; min-width: 0; }
+    .consent-label { cursor: pointer; display: block; color: #fff; margin: 0; }
+    .consent-details { margin-top: 7px; color: rgba(255,255,255,.72); font-size: .75rem; }
+    .consent-details summary {
+      display: inline-block;
+      color: #ffe7a0;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 700;
+      outline-offset: 3px;
+    }
+    .consent-details summary:hover { color: #fff; }
+    .consent-details p { margin: 8px 0 0; line-height: 1.5; }
     @media (max-width: 600px) {
       #social-links {
         top: 143px;
@@ -1002,7 +1015,13 @@
           <p class="privacy-note">🎁 Your letter will be visible to everyone who visits this map. Please share only what you are comfortable making public.</p>
           <div class="consent-group">
             <input type="checkbox" id="data-consent" name="dataConsent" required />
-            <label for="data-consent">Я подтверждаю своё участие в конкурсе Winter Wish Contest и даю согласие на обработку указанных мной данных (имени или псевдонима, пожелания, идеи урока и выбранного оформления ёлки) для приёма и размещения конкурсной заявки на интерактивной карте. Я понимаю, что имя или псевдоним, пожелание и идея урока будут опубликованы в открытом доступе и доступны посетителям сайта. Данные заявки и техническая информация о размещении ёлки сохраняются с использованием Google Sheets. Я не указываю сведения, которые не хочу публиковать.</label>
+            <div class="consent-copy">
+              <label class="consent-label" for="data-consent">Я даю согласие на обработку персональных данных</label>
+              <details class="consent-details">
+                <summary>Подробнее о согласии</summary>
+                <p>Я даю согласие на обработку указанных мной данных (имени или псевдонима, пожелания, идеи урока и выбранного оформления ёлки) для приёма и размещения конкурсной заявки Winter Wish Contest на интерактивной карте. Я понимаю, что имя или псевдоним, пожелание и идея урока будут опубликованы в открытом доступе и доступны посетителям сайта. Данные заявки и техническая информация о размещении ёлки сохраняются с использованием Google Sheets. Я не указываю сведения, которые не хочу публиковать.</p>
+              </details>
+            </div>
           </div>
           <button type="submit" class="submit-btn" id="submit-btn">
             ✨ Plant the tree &amp; send the letter

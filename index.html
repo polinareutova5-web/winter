@@ -1504,6 +1504,7 @@
           return;
         }
         document.getElementById('wish-form').reset();
+        document.getElementById('submit-btn').disabled = true;
         selectedTreeType = null;
         document.querySelectorAll('.tree-option').forEach(el => el.classList.remove('selected'));
         document.getElementById('treeType').value = '';
@@ -1512,8 +1513,22 @@
     }
 
     function setupForm() {
+      const consent = document.getElementById('data-consent');
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = !consent.checked;
+      consent.addEventListener('change', () => {
+        btn.disabled = !consent.checked;
+      });
+
       document.getElementById('wish-form').addEventListener('submit', async e => {
         e.preventDefault();
+
+        // Consent is required before any submission-side effects.
+        if (!consent.checked) {
+          btn.disabled = true;
+          showToast('Please give consent before sending your wish.');
+          return;
+        }
 
         const signature = document.getElementById('signature').value.trim();
         const wish = document.getElementById('wish').value.trim();
@@ -1566,13 +1581,16 @@
           console.error(err);
           showToast('Could not send. Check your internet and script setup.');
         } finally {
-          btn.disabled = false;
+          btn.disabled = !consent.checked;
           btn.textContent = '✨ Plant the tree & send the letter';
         }
       });
     }
 
     async function sendToGoogle(data) {
+      if (!document.getElementById('data-consent').checked) {
+        throw new Error('Personal-data consent is required');
+      }
       const formData = new FormData();
       Object.entries(data).forEach(([k, v]) => formData.append(k, v));
 

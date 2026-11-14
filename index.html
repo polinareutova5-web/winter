@@ -843,6 +843,86 @@
       #welcome-note { max-height: 82vh; overflow-y: auto; }
     }
 
+
+    /* Bright social links */
+    #social-links {
+      position: fixed;
+      top: 124px;
+      right: 24px;
+      z-index: 96;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 24px;
+      color: #fff;
+      text-decoration: none;
+      font: 800 13px 'Nunito', sans-serif;
+      letter-spacing: .1px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.28);
+      transition: transform .2s, filter .2s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .social-link:hover {
+      transform: translateY(-3px) scale(1.04);
+      filter: brightness(1.12);
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    .social-link.vk {
+      background: linear-gradient(135deg, #2787f5, #0866d6);
+    }
+    .social-link.telegram {
+      background: linear-gradient(135deg, #35bdf2, #168acb);
+    }
+    .consent-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 14px 0 8px;
+      padding: 12px;
+      border: 1px solid rgba(255,215,0,.35);
+      border-radius: 10px;
+      background: rgba(0,0,0,.2);
+      color: #f4f5ec;
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+    .consent-group input {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      accent-color: #ffd700;
+      cursor: pointer;
+    }
+    .consent-group label { cursor: pointer; }
+    @media (max-width: 600px) {
+      #social-links {
+        top: 143px;
+        left: 10px;
+        right: auto;
+        gap: 7px;
+      }
+      .social-link {
+        min-height: 36px;
+        padding: 8px 11px;
+        font-size: 11px;
+      }
+      .consent-group { font-size: .74rem; padding: 10px; }
+    }
+    @media (max-width: 380px) {
+      #social-links { top: 139px; gap: 5px; }
+      .social-link { padding: 7px 9px; font-size: 10px; }
+    }
+
   </style>
 </head>
 <body>
@@ -878,6 +958,10 @@
   </div>
 
   <div id="top-actions"><button class="utility-btn" id="help-btn" type="button">❄ How to explore</button><button class="utility-btn" id="home-btn" type="button">⌂ Center map</button></div>
+  <nav id="social-links" aria-label="Subtext social media">
+    <a class="social-link vk" href="https://vk.ru/club235482007" target="_blank" rel="noopener noreferrer">ВКонтакте · Подписаться</a>
+    <a class="social-link telegram" href="https://t.me/subtext_platform" target="_blank" rel="noopener noreferrer">Telegram · Подписаться</a>
+  </nav>
   <button id="sound-toggle" type="button" aria-pressed="false">🔇 Santa sound off</button>
   <section id="welcome-note" aria-label="Welcome to the winter wish map"><div class="welcome-icon">🎄✨</div><h2>A little winter magic</h2><p>Every tree holds a wish and a creative idea for an English lesson. Explore the snowy forest, open the letters, and plant your own Christmas tree.</p><button id="welcome-start" type="button">Enter the winter wonderland</button></section>
   <button id="plus-btn" title="Write a letter">+</button>
@@ -916,6 +1000,10 @@
           </div>
 
           <p class="privacy-note">🎁 Your letter will be visible to everyone who visits this map. Please share only what you are comfortable making public.</p>
+          <div class="consent-group">
+            <input type="checkbox" id="data-consent" name="dataConsent" required />
+            <label for="data-consent">Я подтверждаю своё участие в конкурсе Winter Wish Contest и даю согласие на обработку указанных мной данных (имени или псевдонима, пожелания, идеи урока и выбранного оформления ёлки) для приёма и размещения конкурсной заявки на интерактивной карте. Я понимаю, что имя или псевдоним, пожелание и идея урока будут опубликованы в открытом доступе и доступны посетителям сайта. Данные заявки и техническая информация о размещении ёлки сохраняются с использованием Google Sheets. Я не указываю сведения, которые не хочу публиковать.</label>
+          </div>
           <button type="submit" class="submit-btn" id="submit-btn">
             ✨ Plant the tree &amp; send the letter
           </button>
